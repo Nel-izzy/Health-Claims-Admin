@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import claimsRoutes from './routes/claimsRoutes.js';
-import searchRoutes from './routes/searchRoutes.js';
+import claimsRoutes from './src/routes/claimsRoutes.js';
+import searchRoutes from './src/routes/searchRoutes.js';
 
 dotenv.config();
 
@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/claims', claimsRoutes);
-app.use('/api/google-search', searchRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health Check Route
 app.get('/api/health', (_, res) => {
