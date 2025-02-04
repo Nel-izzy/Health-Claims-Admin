@@ -1,22 +1,31 @@
-import { searchGoogle } from './searchController.js';
+import Claim from '../models/claimModel.js';
+import Influencer from '../models/influencerModel.js';
+import { fetchGoogleResults } from '../utils/searchGoogle.js';
 
-const claimsCache = [];
 
+// Analyze a claim and save it to the database
 export const analyzeClaim = async (req, res) => {
     try {
-        const { claim } = req.body;
-        console.log('Received request body:', req.body);
+        const { claim, influencerHandle } = req.body;
 
-        if (!claim) {
-            return res.status(400).json({ error: 'Claim text is required' });
+        if (!claim || !influencerHandle) {
+            return res.status(400).json({ error: 'Claim text and influencer handle are required' });
+        }
+
+        // Find the influencer by handle
+        const influencer = await Influencer.findOne({ handle: influencerHandle });
+
+        if (!influencer) {
+            return res.status(404).json({ error: 'Influencer not found' });
         }
 
         // Fetch search results
-        const searchResults = await searchGoogle({ query: claim, internalCall: true });
+        const searchResults = await fetchGoogleResults(claim);// Pass claim directly
 
-        if (!Array.isArray(searchResults) || searchResults.length === 0) {
-            return res.json({ claim, status: 'Questionable', score: 50, sources: [] });
+        if (!searchResults || !Array.isArray(searchResults)) {
+            return res.status(500).json({ error: 'Failed to fetch search results' });
         }
+
 
         // Simple analysis: Check if sources support the claim
         let verifiedCount = 0;
@@ -43,13 +52,31 @@ export const analyzeClaim = async (req, res) => {
             score = 20;
         }
 
-        const result = { claim, status, score, sources };
-        claimsCache.push(result);
+        // Create and save the claim to the database
+        const newClaim = new Claim({
+            text: claim,
+            status,
+            score,
+            sources,
+            influencer: influencer._id
+        });
 
-        console.log('Final analysis result:', result);
-        res.json(result);
+        await newClaim.save();
+
+        res.json(newClaim);
     } catch (error) {
-        console.error('Error Analyzing claim:', error);
-        res.status(500).json({ error: 'Error Analyzing claim' });
+        console.error('Error analyzing claim:', error);
+        res.status(500).json({ error: 'Error analyzing claim' });
+    }
+};
+
+// Fetch all claims from the database
+export const getAllClaims = async (req, res) => {
+    try {
+        const claims = await Claim.find().populate('influencer', 'name handle platform followerCount').sort({ analyzedAt: -1 });
+        res.json(claims);
+    } catch (error) {
+        console.error('Error fetching claims:', error);
+        res.status(500).json({ error: 'Error fetching claims' });
     }
 };

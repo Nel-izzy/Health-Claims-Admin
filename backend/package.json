@@ -4,14 +4,16 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "dev": "nodemon --watch './**/*.js' --ignore '../frontend/' index.js",
-        "start": "node index.js"
+        "dev": "nodemon --watch './**/*.js' --ignore '../frontend/' app.js",
+        "start": "node app.js"
     },
     "dependencies": {
         "axios": "^1.7.9",
         "cors": "^2.8.5",
         "dotenv": "^16.0.3",
-        "express": "^4.21.2"
+        "express": "^4.21.2",
+        "mongoose": "^8.9.6",
+        "serverless-http": "^3.2.0"
     },
     "devDependencies": {
         "nodemon": "^3.1.9"

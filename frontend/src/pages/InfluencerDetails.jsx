@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Container, Typography, List, ListItem, ListItemText } from "@mui/material";
+import { Container, Typography, List, ListItem, ListItemText, CircularProgress } from "@mui/material";
 
 const InfluencerDetails = () => {
     const { id } = useParams();
     const [influencer, setInfluencer] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/claims/${id}`)
+        axios.get(`http://localhost:5000/api/influencers/${id}`)
             .then((response) => setInfluencer(response.data))
             .catch((error) => console.error(error));
     }, [id]);
@@ -27,7 +27,7 @@ const InfluencerDetails = () => {
                     </List>
                 </>
             ) : (
-                <Typography>Loading...</Typography>
+                <Typography><CircularProgress /></Typography>
             )}
         </Container>
     );
